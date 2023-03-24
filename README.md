@@ -20,6 +20,7 @@ Submit a .wav of a song in the appropriate box and click on the classify button.
 ## TODO
 We still have many imporvements to make on this app...
 
+* We want to see on which songs of training dataset the model failed to get a better understanding of what needs to be done to increase accuracy... or to see that even humans are not too sure what genre these songs might as that is also a possibility
 * Implement the method that will allow to make a prediction from an audio file. That includes verifying if the file is actually an audiofile and handeling the case where it's not, the feature extraction and prediction from the model implemented with previously saved weights.
 * The model can be upgraded. It is slightly overfitted to the training data. Early stopping is probably best as the training is set to a constant number of training runs instead of stopping when the accuracy stops improving. Some Hyperparameters could be improved or, at least, some more testing needs to be done to compare the results for different hyperparameters
 * Make the web page look nicer. Ideas:
