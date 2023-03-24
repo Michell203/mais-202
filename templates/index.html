@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MusiClassifier</title>
+    <script>
+      function getData() {
+        let elem = document.getElementById("result");
+        let fileElem = document.getElementById("audioFile");
+        let audioFile = fileElem.files[0];
+
+        fetch("http://127.0.0.1:5000/data", {
+          method: "POST",
+          body: audioFile,
+        })
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (data) {
+            console.log(data);
+            elem.innerText = data["data"];
+          });
+      }
+    </script>
+  </head>
+  <body>
+    <h1>MusiClassifier!</h1>
+    <p>
+      Sumbit a .wav file of a song and have a <em>super</em> sophisticated AI
+      tell you what music genre it is.<br />
+      The AI will choose what genre fits best between blues, classical, country,
+      disco, hip hop, jazz, metal, pop, raggae and rock.
+    </p>
+    <br />
+    <input type="file" id="audioFile" />
+    <br />
+    This song's genre is most likely...
+    <div id="result"></div>
+    <br />
+    <button onclick="getData();">Classify!</button>
+  </body>
+</html>
