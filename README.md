@@ -17,7 +17,7 @@ The webapp can identify the genre of a song using a CNN model based on a number 
 
 Submit a .wav of a song in the appropriate box and click on the classify button. The song's genre should appear after a few seconds
 
-##TODO
+## TODO
 We still have many imporvements to make on this app...
 
 * Implement the method that will allow to make a prediction from an audio file. That includes verifying if the file is actually an audiofile and handeling the case where it's not, the feature extraction and prediction from the model implemented with previously saved weights.
@@ -31,7 +31,7 @@ We still have many imporvements to make on this app...
 * Add other genres to the prediction list such as folk, world music or funk
 * Make the model able to guess some sub genres. Example given "Close to the Edge" by Yes, the model would return "Rock, possibly progressive rock".
 
-##Authors
+## Authors
 This project was done by [Michel Hijazin](https://github.com/Michell203), [Zoe Shu](https://github.com/ZoeYingShu) and [Simon Pino-Buisson](https://github.com/spynob)
 
 
