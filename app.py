@@ -4,7 +4,7 @@ import keras
 #import tensorflow as tf
 
 app = Flask(__name__)
-model = createModel()
+#model should probably be an attribute
 
 @app.route("/")
 def index():
@@ -12,6 +12,7 @@ def index():
 
 @app.route("/data", methods=["POST"])
 def data():
+    model = createModel()
     song = transform(request.data)
     genre = predict(song, model)
     print(genre)
