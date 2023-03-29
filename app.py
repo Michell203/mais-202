@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request
 import keras
-#import MusiClassifier
-#import tensorflow as tf
+import tensorflow as tf
 
 app = Flask(__name__)
 #model should probably be an attribute
@@ -12,7 +11,7 @@ def index():
 
 @app.route("/data", methods=["POST"])
 def data():
-    model = createModel()
+    model = tf.keras.models.load_model('./saved_model')
     song = transform(request.data)
     genre = predict(song, model)
     print(genre)
@@ -23,9 +22,9 @@ def transform(audioFile):
     # Transform the .wav file into unsable array of features
     return None
 
-def predict(song):
+def predict(song, model):
     #TODO:
-    # use the model attribute and return the genre
+    # use the model parameter and return the genre using the array of the song's features
     return None
 
 def createModel():
