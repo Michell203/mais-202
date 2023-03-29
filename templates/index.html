@@ -15,9 +15,12 @@
           .then(function (response) {
             return response.json();
           })
-          .then(function (data) {
-            console.log(data);
-            elem.innerText = data["data"];
+          .then((result) => {
+            console.log("Success:", result);
+            elem.innerText = result["genre"];
+          })
+          .catch((error) => {
+            console.error("Error:", error);
           });
       }
     </script>
@@ -30,15 +33,11 @@
       The AI will choose what genre fits best between blues, classical, country,
       disco, hip hop, jazz, metal, pop, raggae and rock.
     </p>
-
     <br />
     <input type="file" id="audioFile" />
+    <button onclick="getData();">Classify!</button>
     <br />
-
     This song's genre is most likely...
     <div id="result"></div>
-    <br />
-    <button onclick="getData();">Classify!</button>
   </body>
-  
 </html>
