@@ -8,7 +8,8 @@
         let fileElem = document.getElementById("audioFile");
         let audioFile = fileElem.files[0];
 
-        fetch("http://127.0.0.1:5000/data", {
+        // fetch("http://127.0.0.1:5000/data", {
+        fetch("http://192.168.0.55:4444/", {
           method: "POST",
           body: audioFile,
         })
