@@ -23,12 +23,40 @@ def data():
     return {"genre":genre}
 
 def transform(audioFile):
-    #TODO:
-    # Transform the .wav file into unsable array of features
-    segmentedList = segment(audioFile)
-    print(segmentedList.size)
+    # Load the audio file
+    audio, sr = librosa.load(audioFile, sr=None)
 
-    return None
+    # Set the segment length and hop length in seconds
+    segment_length = 3
+    hop_length = 512
+    print(sr)
+    # Calculate the number of samples in a segment
+    segment_samples = int(segment_length * sr)
+
+    # Segment the audio
+    segments = []
+    for i in range(0, len(audio), hop_length):
+        segment = audio[i:i+segment_samples]
+        if len(segment) == segment_samples:
+            segments.append(segment)
+
+    # Extract audio features for each segment
+    features = []
+    print(len(segments))
+    for segment in segments:
+        # Extract Mel-frequency cepstral coefficients (MFCCs)
+        mfccs = librosa.feature.mfcc(y=segment, sr=sr,n_mfcc=13,n_fft=2048,hop_length=512)
+        # Extract spectral centroid
+        cent = librosa.feature.spectral_centroid(y=segment, sr=sr)
+        # Extract zero-crossing rate
+        zcr = librosa.feature.zero_crossing_rate(y=segment)
+        # Concatenate all features
+        feature_vector = np.concatenate(mfccs.flatten(), cent.flatten(), zcr.flatten())
+        features.append(feature_vector)
+
+    # Convert the feature list to a numpy array
+    features = np.array(features)
+    return features
 
 def predict(model,X):
 
@@ -71,25 +99,9 @@ def createModel():
     
     return model
 
-def segment(audiofile):
-    segmentduration = 3000 #milliseconds
-    segmentedList = np.array([])
-    audio = AudioSegment.from_wav(audiofile)
-    duration = math.floor(audio.duration_seconds * 1000)
-    print(duration)
-    t1 = 0
-    t2 = t1 + segmentduration
-    print(audio[t1:t2])
-    while t2 < duration:
-        segmentedList = np.append(segmentedList, segment)
-        print(segmentedList)
-        t1 = t1 + segmentduration
-        t2 = t2 + segmentduration
-    
-    segmentedList = np.append(segmentedList, audio[t1:duration])
-
-    return segmentedList
-
 
 audio = "../Her Majesty (Remastered 2009).wav"
-transform(audio)
+X = transform(audio)
+print(X.shape)
+model = tf.keras.models.load_model('./saved_model')
+print(predict(model, X))
