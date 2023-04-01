@@ -1,13 +1,9 @@
 import wave
 from flask import Flask, render_template, request
-# import keras
+import keras
 import numpy as np
 import tensorflow as tf
-import os
 import librosa
-import pandas as pd
-# from pydub import AudioSegment
-import math
 
 app = Flask(__name__)
 #model should probably be an attribute
@@ -27,57 +23,9 @@ def data():
     print(genre)
     return {"genre":genre}
 
-def transform(audioFile):
-    # Load the audio file
-    audio, sr = librosa.load(audioFile, sr=None)
-
-    # Set the segment length and hop length in seconds
-    segment_length = 3
-    hop_length = 512
-    print(sr)
-    # Calculate the number of samples in a segment
-    segment_samples = int(segment_length * sr)
-
-    # Segment the audio
-    segments = []
-    for i in range(0, len(audio), hop_length):
-        segment = audio[i:i+segment_samples]
-        if len(segment) == segment_samples:
-            segments.append(segment)
-
-    # Extract audio features for each segment
-    features = []
-    print(len(segments))
-    for segment in segments:
-        # Extract Mel-frequency cepstral coefficients (MFCCs)
-        mfccs = librosa.feature.mfcc(y=segment, sr=sr,n_mfcc=13,n_fft=2048,hop_length=512)
-        # Extract spectral centroid
-        cent = librosa.feature.spectral_centroid(y=segment, sr=sr)
-        # Extract zero-crossing rate
-        zcr = librosa.feature.zero_crossing_rate(y=segment)
-        # Concatenate all features
-        feature_vector = np.concatenate((mfccs.flatten(), cent.flatten(), zcr.flatten()))
-
-
-        features.append(feature_vector)
-        animals = pd.DataFrame(features,model_features)
-        animals.to_csv("file.csv")
-        # features = np.array(features)
-        feature_data = pd.read_csv("file.csv")
-        # features = features[model_features]
-        features = feature_data[model_features]
-
-    # Convert the feature list to a numpy array
-    # features = np.array(features)
-    return features
-
 def predict(model,X):
-
-    X=X[np.newaxis,...]
     
     prediction=model.predict(X)
-
-
     #get index with max value
     predictIndex=np.argmax(prediction, axis=1)
 
@@ -112,14 +60,77 @@ def createModel():
     
     return model
 
-if __name__ == "__main__":
-    # app.run()
-    app.run(host=os.getenv('IP', '0.0.0.0'), 
-            port=int(os.getenv('PORT', 4445)))
+def transform(audioFile):
+    # Load the audio file
+    audio, sr = librosa.load(audioFile, sr=None)
 
+    # Set the segment length and hop length in seconds
+    segment_length = 15
+    hop_length = 3 * sr
+    # Calculate the number of samples in a segment
+    segment_samples = int(segment_length * sr)
 
-audio = "./Her_Majesty_Remastered_2009.wav"
+    # Segment the audio
+    segments = []
+    t1 = 0 
+    t2 = segment_samples
+    while t2 < len(audio):
+        segment = audio[t1:t2]
+        segments.append(segment)
+        t1 = t2 - hop_length
+        t2 = t1 + segment_samples
+    segments.append(audio[t1:])
+
+    print(len(segments))
+    features = [[0 for i in range(58)] for j in segments]
+    print("({}, {})".format(len(features), len(features[0])))
+    for segment in range(len(segments)):
+        features[segment][0] = len(segments[segment]) * sr
+
+        stft = librosa.feature.chroma_stft(y=segments[segment], sr=sr, hop_length=hop_length)
+        features[segment][1] = np.mean(stft)
+        features[segment][2] = np.var(stft)
+
+        rms = librosa.feature.rms(y=segments[segment], frame_length=len(segments[segment]), hop_length=hop_length)
+        features[segment][3] = np.mean(rms)
+        features[segment][4] = np.var(rms)
+
+        spec_centroid = librosa.feature.spectral_centroid(y=segments[segment], sr=sr, hop_length=hop_length)
+        features[segment][5] = np.mean(spec_centroid)
+        features[segment][6] = np.var(spec_centroid)
+
+        spec_bandwith = librosa.feature.spectral_bandwidth(y=segments[segment], sr=sr, hop_length=hop_length)
+        features[segment][7] = np.mean(spec_bandwith)
+        features[segment][8] = np.var(spec_bandwith)
+
+        rollof = librosa.feature.spectral_rolloff(y=segments[segment], sr=sr, hop_length=hop_length)
+        features[segment][9] = np.mean(rollof)
+        features[segment][10] = np.var(rollof)
+
+        zero_cross = librosa.feature.zero_crossing_rate(y=segments[segment], frame_length=len(segments[segment]), hop_length=hop_length)
+        features[segment][11] = np.mean(zero_cross)
+        features[segment][12] = np.var(zero_cross)
+
+        harmony = librosa.effects.harmonic(y=segments[segment]) # WE NEED TO  LOOK AT THIS TO BE SURE IT'S THE HARMONY FEATURE
+        features[segment][13] = np.mean(harmony)
+        features[segment][14] = np.var(harmony)
+
+        percept = 0.5 #librosa.feature.tonnetz(y=segments[segment], sr=sr, hop_length=hop_length)
+        features[segment][15] = 0.5#np.mean(percept)
+        features[segment][16] = 0.5#np.var(percept)
+
+        tempo = librosa.feature.tempo(y=segments[segment], sr=sr, hop_length=hop_length)
+        features[segment][17] = np.mean(tempo)
+
+        mfccs = librosa.feature.mfcc(y=segments[segment], sr=sr, n_mfcc=20, hop_length=hop_length)
+        for i in range(0, 20):
+            features[segment][2*i+18] = np.mean(mfccs[i])
+            features[segment][2*i+19] = np.var(mfccs[i])
+    
+    return features
+
+# Test run
+audio = "../Her Majesty (Remastered 2009).wav"
 X = transform(audio)
-print(X.shape)
 model = tf.keras.models.load_model('./saved_model')
-print(predict(model, X))
+print(predict(model, X[0]))
