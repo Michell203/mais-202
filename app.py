@@ -128,8 +128,11 @@ def transform(audioFile):
         for i in range(0, 20):
             features[segment][2*i+18] = np.mean(mfccs[i])
             features[segment][2*i+19] = np.var(mfccs[i])
+
     
-    return features
+    features0 = features[0]
+    
+    return features0
 
 # Test run
 # audio = "../Her Majesty (Remastered 2009).wav"
@@ -139,9 +142,23 @@ reconstructed_model.compile(optimizer = "adam",
                 metrics='accuracy')
 audio = "./Her_Majesty_Remastered_2009.wav"
 X = transform(audio)
-# model = tf.keras.models.load_model('./saved_model')
+model = tf.keras.models.load_model('./saved_model',compile=False)
+model.compile(optimizer = "adam",
+                loss='sparse_categorical_crossentropy',
+                metrics='accuracy')
 # print(predict(reconstructed_model, X[0]))
-reconstructed_model.predict(X[0])
+# print(X)
+# reconstructed_model.predict(X)
+Xn = np.array(X)
+print(Xn.shape)
+Xn = np.tile(Xn, (128, 1))
+predict = model.predict(Xn)
+print(predict[0])
+predictIndex = np.argmax(predict, axis=1)
+
+print(predictIndex[0])
+genres = ["Blues", "Classical", "Country", "Disco", "Hip-Hop", "Jazz", "Metal", "Pop", "Reggae", "Rock"]
+print(genres[predictIndex[0]])
 
 if __name__ == "__main__":
     app.run()
