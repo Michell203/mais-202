@@ -1,6 +1,6 @@
 import wave
 from flask import Flask, render_template, request
-import keras
+# import keras
 import numpy as np
 import tensorflow as tf
 import librosa
@@ -8,7 +8,8 @@ import librosa
 app = Flask(__name__)
 #model should probably be an attribute
 
-# reconstructed_model = tf.keras.models.load_model("my_model_h5.h5")
+
+
 model_features = ["chroma_stft_mean","chroma_stft_var","rms_mean","rms_var","spectral_centroid_mean","spectral_centroid_var","spectral_bandwidth_mean","spectral_bandwidth_var","rolloff_mean","rolloff_var","zero_crossing_rate_mean","zero_crossing_rate_var","harmony_mean","harmony_var","perceptr_mean","perceptr_var","tempo","mfcc1_mean","mfcc1_var","mfcc2_mean","mfcc2_var","mfcc3_mean","mfcc3_var","mfcc4_mean","mfcc4_var","mfcc5_mean","mfcc5_var","mfcc6_mean","mfcc6_var","mfcc7_mean","mfcc7_var","mfcc8_mean","mfcc8_var","mfcc9_mean","mfcc9_var","mfcc10_mean","mfcc10_var","mfcc11_mean","mfcc11_var","mfcc12_mean","mfcc12_var","mfcc13_mean","mfcc13_var","mfcc14_mean","mfcc14_var","mfcc15_mean","mfcc15_var","mfcc16_mean","mfcc16_var","mfcc17_mean","mfcc17_var","mfcc18_mean","mfcc18_var","mfcc19_mean","mfcc19_var","mfcc20_mean","mfcc20_var"]
 
 @app.route("/")
@@ -26,8 +27,9 @@ def data():
 def predict(model,X):
     
     prediction=model.predict(X)
+    # prediction = reconstructed_model.predict(X)
     #get index with max value
-    predictIndex=np.argmax(prediction, axis=1)
+    predictIndex = np.argmax(prediction, axis=1)
 
     print(predictIndex)
     genres = ["Blues", "Classical", "Country", "Disco", "Hip-Hop", "Jazz", "Metal", "Pop", "Reggae", "Rock"]
@@ -130,7 +132,16 @@ def transform(audioFile):
     return features
 
 # Test run
-audio = "../Her Majesty (Remastered 2009).wav"
+# audio = "../Her Majesty (Remastered 2009).wav"
+reconstructed_model = tf.keras.models.load_model("my_model_h5.h5", compile=False)
+reconstructed_model.compile(optimizer = "adam",
+                loss='sparse_categorical_crossentropy',
+                metrics='accuracy')
+audio = "./Her_Majesty_Remastered_2009.wav"
 X = transform(audio)
-model = tf.keras.models.load_model('./saved_model')
-print(predict(model, X[0]))
+# model = tf.keras.models.load_model('./saved_model')
+# print(predict(reconstructed_model, X[0]))
+reconstructed_model.predict(X[0])
+
+if __name__ == "__main__":
+    app.run()
