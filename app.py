@@ -25,15 +25,21 @@ def index():
 @app.route("/data", methods=["POST"])
 def data():
     songFeatures = request.data
+    file = request.files['file']
+    print(songFeatures.filename)
+    print("songFeatures: \n")
+    # print(songFeatures)
     genre = predict(songFeatures)
     # print(genre)
     return {"genre":genre}
 
 def predict(pred):
-    
-    frame = pd.read_csv("features_3_sec.csv")
 
-    select_song = frame.loc[frame['filename'] == str(pred)]
+    predi = os.path.basename(os.path.normpath(pred))
+
+    frame = pd.read_csv("Data/features_30_sec.csv")
+
+    select_song = frame.loc[frame['filename'] == str(predi)]
     select_song = select_song.drop('filename', axis=1)
 
     fit = StandardScaler()
@@ -155,8 +161,10 @@ def predict(pred):
     
 #     return features0
 
+# pred = predict('Data/genres_original/blues/blues.00000.wav')
+
 
 if __name__ == "__main__":
-    # app.run()
-    app.run(host=os.getenv('IP', '192.168.0.55'), 
-            port=int(os.getenv('PORT', 4445)), debug=True)
+    app.run(debug=True)
+    # app.run(host=os.getenv('IP', '192.168.0.55'), 
+            # port=int(os.getenv('PORT', 4445)), debug=True)
